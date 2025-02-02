@@ -27,7 +27,7 @@ local state = {
 	},
 	diagrams = {},
 	rendering_disabled_buffers = {},
-	globally_disabled = false,
+	globally_disabled = true,
 }
 
 local clear_buffer = function(bufnr)
