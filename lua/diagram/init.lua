@@ -121,15 +121,15 @@ local toggle_rendering = function(action, opts)
 	end
 
 	if bufnr then
-		if not state.rendering_disabled_buffers[bufnr] then
-			for _, integration in ipairs(state.integrations) do
-				if vim.tbl_contains(integration.filetypes, vim.bo[bufnr].filetype) then
-					render_buffer(bufnr, vim.api.nvim_get_current_win(), integration)
-				end
-			end
-		else
-			clear_buffer(bufnr)
-		end
+		-- if not state.rendering_disabled_buffers[bufnr] then
+		-- 	for _, integration in ipairs(state.integrations) do
+		-- 		if vim.tbl_contains(integration.filetypes, vim.bo[bufnr].filetype) then
+		-- 			render_buffer(bufnr, vim.api.nvim_get_current_win(), integration)
+		-- 		end
+		-- 	end
+		-- else
+		-- 	clear_buffer(bufnr)
+		-- end
 		-- else
 		-- 	if not state.globally_disabled then
 		-- 		for _, buf in ipairs(vim.api.nvim_list_bufs()) do
