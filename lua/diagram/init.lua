@@ -53,11 +53,11 @@ local render_buffer = function(bufnr, winnr, integration)
 	if not should_render(bufnr) then
 		return
 	end
+
 	clear_buffer(bufnr)
 	local diagrams = integration.query_buffer_diagrams(bufnr)
 
-	for _, diagram in ipairs(diagrams) do
-		---@type Renderer
+	local function render_diagram(diagram, callback)
 		local renderer = nil
 		for _, r in ipairs(integration.renderers) do
 			if r.id == diagram.renderer_id then
@@ -70,15 +70,11 @@ local render_buffer = function(bufnr, winnr, integration)
 		local renderer_options = state.renderer_options[renderer.id] or {}
 		local rendered_path = renderer.render(diagram.source, renderer_options)
 		if not rendered_path then
-			return
+			return callback()
 		end
 
 		local diagram_col = diagram.range.start_col
-		local diagram_row = diagram.range.start_row
-		diagram_row = diagram_row - 1
-		-- if vim.bo[bufnr].filetype == "norg" then
-		-- 	diagram_row = diagram_row - 1
-		-- end
+		local diagram_row = diagram.range.start_row - 1
 
 		local image = image_nvim.from_file(rendered_path, {
 			buffer = bufnr,
@@ -91,7 +87,26 @@ local render_buffer = function(bufnr, winnr, integration)
 		diagram.image = image
 		table.insert(state.diagrams, diagram)
 		image:render()
+		callback()
 	end
+
+	local function process_diagrams(index)
+		if index > #diagrams then
+			return
+		end
+
+		local diagram = diagrams[index]
+		render_diagram(diagram, function()
+			vim.schedule(function()
+				process_diagrams(index + 1)
+			end)
+		end)
+	end
+
+	-- Start processing diagrams asynchronously
+	vim.schedule(function()
+		process_diagrams(1)
+	end)
 end
 
 local toggle_rendering = function(action, opts)
